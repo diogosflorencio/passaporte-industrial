@@ -1,4 +1,4 @@
-/* Painel de análises — API Passaporte Industrial */
+/* Painel de análises - API Passaporte Industrial */
 
 const CONFIG = {
     apiBase: 'https://api-passaporteindustrial.findes.org.br',
@@ -160,20 +160,20 @@ function escapeHtml(s) {
 }
 
 function formatarData(val) {
-    if (!val) return '—';
+    if (!val) return '-';
     const d = val instanceof Date ? val : new Date(val);
-    return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString('pt-BR');
+    return Number.isNaN(d.getTime()) ? '-' : d.toLocaleDateString('pt-BR');
 }
 
 function formatarCpf(cpf) {
-    if (!cpf) return '—';
+    if (!cpf) return '-';
     const n = String(cpf).replace(/\D/g, '');
     if (n.length !== 11) return cpf;
     return n.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
 }
 
 function calcularStatus(dataVencimento) {
-    if (!dataVencimento) return { texto: '—', classe: '' };
+    if (!dataVencimento) return { texto: '-', classe: '' };
     const venc = new Date(dataVencimento);
     const dias = Math.ceil((venc - new Date()) / (86400000));
     if (dias < 0) return { texto: 'Vencido', classe: 'status-vencido' };
@@ -278,7 +278,7 @@ function desenharCorpoTabela(containerId, colunas, linhas, opcoes) {
             ]
                 .filter(Boolean)
                 .join(' ');
-            const cells = colunas.map((c) => `<td>${row[c.chave] ?? '—'}</td>`).join('');
+            const cells = colunas.map((c) => `<td>${row[c.chave] ?? '-'}</td>`).join('');
             return `<tr class="${cls}" data-idx="${row._idxOriginal ?? idx}">${cells}</tr>`;
         })
         .join('');
@@ -386,7 +386,6 @@ function valorExportacao(row, chave) {
         statusTexto: calcularStatus(raw.dataVencimento).texto,
         statusTreinamento: calcularStatus(raw.dataVencimento).texto,
         statusDoc: raw.status === true ? 'Ativo' : raw.status === false ? 'Inativo' : '',
-        nome: raw.nome,
         cargo: raw.cargo,
         orgao: raw.orgao,
         funcao: raw.funcao || raw.nomeFuncao || raw.cargo,
@@ -525,7 +524,6 @@ function normalizarTexto(s) {
         .trim();
 }
 
-/** Nome no catálogo (ex.: "SAMARCO - X") vs no relatório (ex.: "X") */
 function treinamentoCombina(nomeRelatorio, filtro) {
     const a = normalizarTexto(nomeRelatorio);
     const b = normalizarTexto(filtro);
@@ -691,7 +689,7 @@ async function consultarPorTreinamento() {
 
     if (!filtradas.length) {
         mostrarStatus(
-            `Nenhum registro para "${f.treinamento}". Foram carregados ${todas.length} no total — escolha um nome da lista do filtro (vindos do relatório).`,
+            `Nenhum registro para "${f.treinamento}". Foram carregados ${todas.length} no total - escolha um nome da lista do filtro (vindos do relatório).`,
             'info'
         );
     }
@@ -707,8 +705,8 @@ async function consultarCatalogo() {
     const lista = parsed.lista;
     const linhas = lista.map((t) => ({
         id: t.id,
-        nome: escapeHtml(t.nome || '—'),
-        validade: t.validadeEmDias != null ? `${t.validadeEmDias} dias` : '—',
+        nome: escapeHtml(t.nome || '-'),
+        validade: t.validadeEmDias != null ? `${t.validadeEmDias} dias` : '-',
         liberacao: t.liberacao ? 'Sim' : 'Não',
         status: t.status ? 'Ativo' : 'Inativo',
         _raw: t
@@ -780,9 +778,9 @@ function colaboradoresUnicosDeTreinamentos(linhasTreino) {
                 id: null,
                 nome: r.funcionario,
                 cpf: r.cpf,
-                cargo: '—',
-                orgao: '—',
-                localizador: '—',
+                cargo: '-',
+                orgao: '-',
+                localizador: '-',
                 status: true,
                 numeroContrato: r.numeroContrato,
                 contratoId: contratoIdPorNumero(r.numeroContrato),
@@ -797,11 +795,11 @@ function colaboradoresUnicosDeTreinamentos(linhasTreino) {
 function mapearLinhasFuncionarios(lista) {
     return lista.map((item) => ({
         id: item.id,
-        nome: escapeHtml(item.nome || item.funcionario || '—'),
+        nome: escapeHtml(item.nome || item.funcionario || '-'),
         cpf: formatarCpf(item.cpf),
-        cargo: escapeHtml(item.cargo || item.funcao || item.nomeFuncao || '—'),
-        orgao: escapeHtml(item.orgao || '—'),
-        localizador: escapeHtml(item.localizador || '—'),
+        cargo: escapeHtml(item.cargo || item.funcao || item.nomeFuncao || '-'),
+        orgao: escapeHtml(item.orgao || '-'),
+        localizador: escapeHtml(item.localizador || '-'),
         status: item.status === false ? 'Inativo' : 'Ativo',
         _raw: item
     }));
@@ -818,16 +816,14 @@ async function consultarFuncionarios() {
     }
 
     if (!lista.length) {
-        const { parsed, lista: listaTreino, linhas: treinos } = await buscarDadosTreinamentosApi({
-            periodoMaximo: true
-        });
+        const { parsed, lista: listaTreino, linhas: treinos } = await buscarDadosTreinamentosApi({ periodoMaximo: true });
         lista = colaboradoresUnicosDeTreinamentos(treinos);
         res = { parsed, lista: listaTreino };
         if (lista.length) {
             mostrarStatus(
                 f.contratoId
                     ? 'Lista montada pelo relatório de treinamentos (período amplo), pois /funcionarios veio vazio.'
-                    : 'Sem contrato na API de funcionários — colaboradores únicos pelo relatório de treinamentos.',
+                    : 'Sem contrato na API de funcionários - colaboradores únicos pelo relatório de treinamentos.',
                 'info'
             );
         } else if (!f.contratoId) {
@@ -883,15 +879,15 @@ async function consultarPassaportes() {
     const parsed = parseApiLista(dados, bruto);
     const lista = parsed.lista;
     const linhas = lista.map((item) => ({
-        funcionario: escapeHtml(item.nomeFuncionario || '—'),
+        funcionario: escapeHtml(item.nomeFuncionario || '-'),
         cpf: formatarCpf(item.cpf),
-        contratante: escapeHtml(item.contratante || '—'),
-        contratada: escapeHtml(item.contratada || '—'),
-        contrato: escapeHtml(item.numeroContrato || '—'),
+        contratante: escapeHtml(item.contratante || '-'),
+        contratada: escapeHtml(item.contratada || '-'),
+        contrato: escapeHtml(item.numeroContrato || '-'),
         emissao: formatarData(item.dataEmissao),
         fimContrato: formatarData(item.dataFimContrato),
-        localizador: escapeHtml(item.localizador || '—'),
-        criador: escapeHtml(item.nomeUsuarioCriador || '—'),
+        localizador: escapeHtml(item.localizador || '-'),
+        criador: escapeHtml(item.nomeUsuarioCriador || '-'),
         _raw: item
     }));
 
@@ -936,10 +932,10 @@ async function consultarDocumentos() {
     const parsed = parseApiLista(dados, bruto);
     const lista = parsed.lista;
     const linhas = lista.map((item) => ({
-        funcionario: escapeHtml(item.funcionario || '—'),
+        funcionario: escapeHtml(item.funcionario || '-'),
         cpf: formatarCpf(item.cpfFuncionario || item.cpf),
-        tipo: escapeHtml(item.tipoExame || '—'),
-        contrato: escapeHtml(item.numeroContrato || '—'),
+        tipo: escapeHtml(item.tipoExame || '-'),
+        contrato: escapeHtml(item.numeroContrato || '-'),
         emissao: formatarData(item.dataEmissao),
         validade: formatarData(item.dataValidade),
         status: item.status ? 'Ativo' : 'Inativo',
@@ -1081,7 +1077,7 @@ async function abrirDossie(idx) {
         ${listaTreinos
             .map((t) => {
                 const st = calcularStatus(t.dataVencimento);
-                return `<tr><td>${escapeHtml(t.treinamento || t.nomeTreinamento || '—')}</td>
+                return `<tr><td>${escapeHtml(t.treinamento || t.nomeTreinamento || '-')}</td>
                 <td>${formatarData(t.dataEmissao)}</td><td>${formatarData(t.dataVencimento)}</td>
                 <td class="${st.classe}">${st.texto}</td></tr>`;
             })
@@ -1094,13 +1090,13 @@ async function abrirDossie(idx) {
         ${listaDocs
             .map(
                 (d) =>
-                    `<tr><td>${escapeHtml(d.tipoExame || d.nome || d.descricao || '—')}</td>
+                    `<tr><td>${escapeHtml(d.tipoExame || d.nome || d.descricao || '-')}</td>
                 <td>${formatarData(d.dataValidade || d.dataVencimento)}</td></tr>`
             )
             .join('')}</tbody></table>`;
 
     detalheEl.innerHTML = `
-        <div class="bloco-dossie"><h3>Ficha do colaborador</h3><div class="grid-dossie">${gridCampos || '<p>—</p>'}</div></div>
+        <div class="bloco-dossie"><h3>Ficha do colaborador</h3><div class="grid-dossie">${gridCampos || '<p>-</p>'}</div></div>
         <div class="bloco-dossie"><h3>Treinamentos (${listaTreinos.length})</h3>${tblTreinos}</div>
         <div class="bloco-dossie"><h3>Documentos (${listaDocs.length})</h3>${tblDocs}</div>
     `;
@@ -1215,13 +1211,139 @@ async function iniciarAppAutenticado() {
     atualizarFiltrosVisiveis();
 }
 
+// ─── Toggle de tema + GIFs ─────────────────────────────────────
+
+
+
+const GIFS = [
+    'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif',
+    'https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif',
+    'https://media.giphy.com/media/26BRzozg4TCBXv6QU/giphy.gif',
+    'https://media.giphy.com/media/26BRv0ThflsHCqDrG/giphy.gif',
+    'https://media.giphy.com/media/11sBLVxNs7v6WA/giphy.gif',
+    'https://media.giphy.com/media/3o7aD2saalBwwftBIY/giphy.gif',
+    'https://media.giphy.com/media/3o7btPCcdNniyf0ArS/giphy.gif'
+];
+
+const CHAVE_TEMA = 'passaportePainelTema';
+
+let temaAnimando = false;
+
+function temaEscuroAtivo() {
+    return document.documentElement.dataset.theme === 'dark';
+}
+
+function aplicarTema(escuro) {
+    if (escuro) {
+        document.documentElement.dataset.theme = 'dark';
+    } else {
+        delete document.documentElement.dataset.theme;
+    }
+    localStorage.setItem(CHAVE_TEMA, escuro ? 'dark' : 'light');
+    const input = document.getElementById('inputToggleTema');
+    if (input) input.checked = escuro;
+
+    atualizarGifBadge(escuro, escuro);
+}
+
+function gifAleatorio(excluir) {
+    const pool = excluir ? GIFS.filter((u) => u !== excluir) : GIFS;
+    const lista = pool.length ? pool : GIFS;
+    return lista[Math.floor(Math.random() * lista.length)];
+}
+
+function trocarGifAtual() {
+    const img = document.getElementById('gifImg');
+    if (!img) return;
+    img.src = gifAleatorio(img.src);
+}
+
+function atualizarGifBadge(visivel, sortearNovo) {
+    const badge = document.getElementById('gifBadge');
+    const img = document.getElementById('gifImg');
+    if (!badge || !img) return;
+
+    if (!visivel) {
+        badge.classList.add('oculto');
+        badge.setAttribute('aria-hidden', 'true');
+        return;
+    }
+
+    if (sortearNovo) {
+        img.src = gifAleatorio();
+    }
+    badge.classList.remove('oculto');
+    badge.setAttribute('aria-hidden', 'false');
+}
+
+function animarTrocaTema(escuroNovo) {
+    const overlay = document.getElementById('temaOverlay');
+    const circulo = document.getElementById('temaCirculo');
+    if (!overlay || !circulo) {
+        aplicarTema(escuroNovo);
+        return;
+    }
+
+    temaAnimando = true;
+    overlay.classList.remove('oculto');
+    circulo.style.background = escuroNovo ? '#000000' : '#ffffff';
+    circulo.style.transition = 'none';
+    circulo.style.width = '0';
+    circulo.style.height = '0';
+    void circulo.offsetWidth;
+
+    circulo.style.transition = 'width 0.45s cubic-bezier(0.4,0,0.2,1), height 0.45s cubic-bezier(0.4,0,0.2,1)';
+    circulo.style.width = '220vmax';
+    circulo.style.height = '220vmax';
+
+    setTimeout(() => {
+        aplicarTema(escuroNovo);
+    }, 220);
+
+    setTimeout(() => {
+        circulo.style.width = '0';
+        circulo.style.height = '0';
+        overlay.classList.add('oculto');
+        temaAnimando = false;
+    }, 480);
+}
+
+function iniciarToggleTema() {
+    const salvo = localStorage.getItem(CHAVE_TEMA);
+    const escuro = salvo === 'dark';
+    aplicarTema(escuro);
+
+    const input = document.getElementById('inputToggleTema');
+    const badge = document.getElementById('gifBadge');
+    if (badge) {
+        badge.addEventListener('click', trocarGifAtual);
+    }
+    if (!input) return;
+
+    input.addEventListener('change', () => {
+        if (temaAnimando) {
+            input.checked = temaEscuroAtivo();
+            return;
+        }
+        animarTrocaTema(input.checked);
+    });
+}
+
+// ─── DOMContentLoaded ─────────────────────────────────────────
+
 document.addEventListener('DOMContentLoaded', () => {
+    try {
+        iniciarToggleTema();
+    } catch (err) {
+        console.error('Erro ao iniciar tema:', err);
+    }
+
     const agora = new Date();
     const seteDias = new Date(agora.getTime() - 7 * 86400000);
     const ini = document.getElementById('dataInicio');
     const fim = document.getElementById('dataFim');
-    if (!ini.value) ini.value = formatarParaInputDatetimeLocal(seteDias);
-    if (!fim.value) fim.value = formatarParaInputDatetimeLocal(agora);
+    if (ini && !ini.value) ini.value = formatarParaInputDatetimeLocal(seteDias);
+    if (fim && !fim.value) fim.value = formatarParaInputDatetimeLocal(agora);
 
     document.getElementById('formLogin').addEventListener('submit', async (e) => {
         e.preventDefault();

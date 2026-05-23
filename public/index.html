@@ -3,11 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Passaporte — Análises</title>
+    <title>Painel Passaporte - Análises</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <label class="toggle-tema-flutuante" for="inputToggleTema" title="Alternar tema claro / escuro">
+        <span class="toggle-texto toggle-texto-claro">Claro</span>
+        <span class="toggle-switch">
+            <input type="checkbox" id="inputToggleTema" aria-label="Ativar tema escuro">
+            <span class="toggle-slider"></span>
+        </span>
+        <span class="toggle-texto toggle-texto-escuro">Escuro</span>
+    </label>
+
+    <button type="button" id="gifBadge" class="gif-badge oculto" title="Trocar GIF" aria-label="GIF decorativo">
+        <img id="gifImg" src="" alt="">
+    </button>
+
+    <div id="temaOverlay" class="tema-overlay oculto" aria-hidden="true">
+        <div id="temaCirculo" class="tema-circulo"></div>
+    </div>
+
     <main>
         <section id="telaLogin" class="tela-login">
             <h1>Passaporte Industrial</h1>
@@ -32,8 +49,12 @@
         <div id="appPrincipal" class="app-principal oculto">
             <header class="cabecalho-app">
                 <div>
-                    <strong id="usuarioLogado"></strong>
+                    <strong id="usuarioLogado">
+                    </strong>
                     <span id="statusSessao" class="status-sessao"></span>
+                    <br>
+
+                    <small> O principal uso é a funcionalidade “Quem tem o treinamento”. O desenvolvedor não se responsabiliza por qualquer uso indevido. Qualquer dúvida ou sugestão, é só falar. O uso não interfere em nada no site oficial, mas evite fazer extrações massivas com frequência.</small>
                 </div>
                 <button type="button" id="btnSair" class="botao-secundario">Sair</button>
             </header>
@@ -109,7 +130,7 @@
                 <!-- Por treinamento -->
                 <section class="view-panel" id="viewPorTreinamento" data-view="porTreinamento">
                     <h2>Colaboradores com treinamento específico</h2>
-                    <p class="descricao-view">Usa período amplo (sem filtro de datas). O select de treinamento é preenchido com os nomes vindos do relatório — não use só o catálogo.</p>
+                    <p class="descricao-view">Usa período amplo (sem filtro de datas). O select de treinamento é preenchido com os nomes vindos do relatório - não use só o catálogo.</p>
                     <div class="resumo-cards" id="resumoPorTreinamento"></div>
                     <div class="wrap-tabela" id="tabelaPorTreinamento"></div>
                 </section>
