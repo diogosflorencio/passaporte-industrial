@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Passaporte — Análises</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main>
+        <section id="telaLogin" class="tela-login">
+            <h1>Passaporte Industrial</h1>
+            <p class="texto-ajuda">
+                Use a mesma conta do
+                <a href="https://passaporteindustrial.findes.org.br/" target="_blank" rel="noopener">Passaporte Industrial</a>.
+            </p>
+            <form id="formLogin" class="form-login">
+                <div class="grupo-formulario">
+                    <label for="loginUsuario">Usuário</label>
+                    <input type="text" id="loginUsuario" autocomplete="username" required>
+                </div>
+                <div class="grupo-formulario">
+                    <label for="loginSenha">Senha</label>
+                    <input type="password" id="loginSenha" autocomplete="current-password" required>
+                </div>
+                <button type="submit" id="btnEntrar" class="botao-largo">Conectar</button>
+            </form>
+            <p id="loginErro" class="login-erro oculto" role="alert"></p>
+        </section>
+
+        <div id="appPrincipal" class="app-principal oculto">
+            <header class="cabecalho-app">
+                <div>
+                    <strong id="usuarioLogado"></strong>
+                    <span id="statusSessao" class="status-sessao"></span>
+                </div>
+                <button type="button" id="btnSair" class="botao-secundario">Sair</button>
+            </header>
+
+            <nav class="nav-abas" id="navAbas" aria-label="Análises">
+                <button type="button" class="aba ativa" data-view="treinamentos">Treinamentos (vencimento)</button>
+                <button type="button" class="aba" data-view="porTreinamento">Quem tem o treinamento</button>
+                <button type="button" class="aba" data-view="catalogo">Catálogo de treinamentos</button>
+                <button type="button" class="aba" data-view="funcionarios">Colaboradores</button>
+                <button type="button" class="aba" data-view="dossies">Dossiês</button>
+                <button type="button" class="aba" data-view="passaportes">Passaportes</button>
+                <button type="button" class="aba" data-view="documentos">Documentos</button>
+            </nav>
+
+            <aside class="painel-filtros-global" id="painelFiltrosGlobal">
+                <h2 class="titulo-painel">Filtros</h2>
+                <div class="grade-filtros">
+                    <div class="grupo-formulario">
+                        <label for="contrato">Contrato</label>
+                        <select id="contrato" disabled><option value="">Carregando...</option></select>
+                    </div>
+                    <div class="grupo-formulario">
+                        <label for="empresaContratante">Contratante</label>
+                        <select id="empresaContratante" disabled><option value="">Todas</option></select>
+                    </div>
+                    <div class="grupo-formulario">
+                        <label for="empresaContratada">Contratada</label>
+                        <select id="empresaContratada" disabled><option value="">Todas</option></select>
+                    </div>
+                    <div class="grupo-formulario filtro-data">
+                        <label for="dataInicio">Data início</label>
+                        <input type="datetime-local" id="dataInicio">
+                    </div>
+                    <div class="grupo-formulario filtro-data">
+                        <label for="dataFim">Data fim</label>
+                        <input type="datetime-local" id="dataFim">
+                    </div>
+                    <div class="grupo-formulario filtro-view filtro-view-porTreinamento filtro-view-treinamentos oculto">
+                        <label for="filtroTreinamento">Treinamento</label>
+                        <select id="filtroTreinamento"><option value="">Selecione após consultar</option></select>
+                    </div>
+                    <div class="grupo-formulario filtro-view filtro-view-funcionarios filtro-view-dossies oculto">
+                        <label for="buscaColaborador">Buscar (nome / CPF)</label>
+                        <input type="text" id="buscaColaborador" placeholder="Opcional">
+                    </div>
+                    <div class="grupo-formulario">
+                        <label for="take">Máx. registros</label>
+                        <input type="number" id="take" value="5000" min="1" max="100000">
+                    </div>
+                    <div class="grupo-formulario">
+                        <label for="page">Página</label>
+                        <input type="number" id="page" value="1" min="1">
+                    </div>
+                </div>
+                <div class="barra-acoes-filtro">
+                    <button type="button" id="btnConsultar" class="botao-principal">Consultar</button>
+                    <button type="button" id="btnExportar" class="botao-sucesso">Exportar planilha</button>
+                </div>
+                <p class="url-debug oculto" id="urlDebug"></p>
+            </aside>
+
+            <div class="area-resultados">
+                <div id="painelStatus" class="painel-status oculto"></div>
+
+                <!-- Treinamentos vencimento -->
+                <section class="view-panel ativa" id="viewTreinamentos" data-view="treinamentos">
+                    <h2>Treinamentos por vencimento</h2>
+                    <p class="descricao-view">Relatório de certificados com datas de emissão e vencimento (mesmo endpoint do Passaporte).</p>
+                    <div class="resumo-cards" id="resumoTreinamentos"></div>
+                    <div class="wrap-tabela" id="tabelaTreinamentos"></div>
+                </section>
+
+                <!-- Por treinamento -->
+                <section class="view-panel" id="viewPorTreinamento" data-view="porTreinamento">
+                    <h2>Colaboradores com treinamento específico</h2>
+                    <p class="descricao-view">Usa período amplo (sem filtro de datas). O select de treinamento é preenchido com os nomes vindos do relatório — não use só o catálogo.</p>
+                    <div class="resumo-cards" id="resumoPorTreinamento"></div>
+                    <div class="wrap-tabela" id="tabelaPorTreinamento"></div>
+                </section>
+
+                <!-- Catálogo -->
+                <section class="view-panel" id="viewCatalogo" data-view="catalogo">
+                    <h2>Catálogo de treinamentos</h2>
+                    <p class="descricao-view">Todos os treinamentos cadastrados no sistema (`GET /treinamentos`).</p>
+                    <div class="resumo-cards" id="resumoCatalogo"></div>
+                    <div class="wrap-tabela" id="tabelaCatalogo"></div>
+                </section>
+
+                <!-- Funcionários -->
+                <section class="view-panel" id="viewFuncionarios" data-view="funcionarios">
+                    <h2>Colaboradores</h2>
+                    <p class="descricao-view">Lista de funcionários do contrato selecionado. Selecione um contrato nos filtros.</p>
+                    <div class="resumo-cards" id="resumoFuncionarios"></div>
+                    <div class="wrap-tabela" id="tabelaFuncionarios"></div>
+                </section>
+
+                <!-- Dossiês -->
+                <section class="view-panel" id="viewDossies" data-view="dossies">
+                    <h2>Dossiês dos colaboradores</h2>
+                    <p class="descricao-view">Selecione um colaborador para ver ficha, treinamentos e documentos.</p>
+                    <div class="layout-dossie">
+                        <div class="lista-dossie">
+                            <div class="busca-dossie">
+                                <input type="search" id="buscaDossie" placeholder="Filtrar colaboradores...">
+                            </div>
+                            <div id="listaDossies"></div>
+                        </div>
+                        <div class="detalhe-dossie" id="detalheDossie">
+                            <p class="placeholder-dossie">Escolha um colaborador na lista ao lado.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Passaportes -->
+                <section class="view-panel" id="viewPassaportes" data-view="passaportes">
+                    <h2>Passaportes emitidos</h2>
+                    <p class="descricao-view">Relatório de passaportes (`/passaporte-funcionario/relatorio`).</p>
+                    <div class="resumo-cards" id="resumoPassaportes"></div>
+                    <div class="wrap-tabela" id="tabelaPassaportes"></div>
+                </section>
+
+                <!-- Documentos -->
+                <section class="view-panel" id="viewDocumentos" data-view="documentos">
+                    <h2>Documentos de colaboradores</h2>
+                    <p class="descricao-view">Relatório de documentos e exames (`/documentos-funcionario/relatorio`).</p>
+                    <div class="resumo-cards" id="resumoDocumentos"></div>
+                    <div class="wrap-tabela" id="tabelaDocumentos"></div>
+                </section>
+            </div>
+        </div>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>
